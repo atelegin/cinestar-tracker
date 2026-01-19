@@ -2,32 +2,25 @@ from datetime import datetime, timedelta, date
 
 def compute_week_window(now: datetime) -> tuple[datetime, datetime]:
     """
-    Returns (week_start, week_end) tuple.
-    Rule:
-    - If Mon-Wed (0-2): week_start is NEXT Thursday.
-    - If Thu-Sun (3-6): week_start is CURRENT Thursday.
-    
+    Returns (week_start, week_end) tuple for the CURRENT cinema week.
     Cinema week is Thu -> Next Wed.
+    
+    Logic: Always find the most recent Thursday (or today if today is Thursday).
     Window is [Thursday 00:00, Next Wednesday 23:59].
     """
     # weekday: Mon=0, ..., Thu=3, ..., Sun=6
     wd = now.weekday()
     today_date = now.date()
     
-    if wd <= 2: # Mon, Tue, Wed
-        # Days until next Thursday
-        # Mon(0) -> +3 -> Thu(3)
-        # Tue(1) -> +2 -> Thu(3)
-        # Wed(2) -> +1 -> Thu(3)
-        days_ahead = 3 - wd
-        start_date = today_date + timedelta(days=days_ahead)
-    else: # Thu, Fri, Sat, Sun
-        # Days since last Thursday (or today)
-        # Thu(3) -> -0
-        # Fri(4) -> -1
-        # Sun(6) -> -3
-        days_back = wd - 3
-        start_date = today_date - timedelta(days=days_back)
+    # Calculate days since the last Thursday
+    # Thu(3) -> 0
+    # Fri(4) -> 1
+    # ...
+    # Wed(2) -> 6
+    # Math: (wd - 3) % 7
+    days_since_thu = (wd - 3) % 7
+    
+    start_date = today_date - timedelta(days=days_since_thu)
         
     start_dt = datetime.combine(start_date, datetime.min.time())
     # End is +6 days (Wed) at 23:59
