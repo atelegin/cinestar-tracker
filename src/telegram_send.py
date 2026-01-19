@@ -1,29 +1,16 @@
 import requests
-import logging
 
-logger = logging.getLogger(__name__)
-
-def send_message(token: str, chat_id: str, text: str) -> bool:
+def send_message(token: str, chat_id: str, text: str) -> None:
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    
     payload = {
         "chat_id": chat_id,
-        "text": text
-        # No parse_mode -> plain text
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
     }
-    
-    try:
-        resp = requests.post(url, json=payload, timeout=10)
-        resp.raise_for_status()
-        
-        data = resp.json()
-        if not data.get("ok"):
-            logger.error(f"Telegram API error: {data}")
-            return False
-            
-        logger.info("Message sent successfully.")
-        return True
-        
-    except requests.RequestException as e:
-        logger.error(f"Failed to send Telegram message: {e}")
-        return False
+    r = requests.post(url, data=payload, timeout=20)
+    r.raise_for_status()
+    data = r.json()
+    if not data.get("ok"):
+        raise RuntimeError(f"Telegram error: {data}")
+    return True

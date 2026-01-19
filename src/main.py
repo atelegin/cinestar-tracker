@@ -38,7 +38,7 @@ def main():
     
     # 3. Filter Week Window
     from src.week_interval import compute_week_window, filter_by_week
-    from datetime import datetime
+    from datetime import datetime, timedelta
     now = datetime.now()
     week_start, week_end = compute_week_window(now)
     week_start_str = week_start.strftime("%Y-%m-%d")
@@ -46,6 +46,26 @@ def main():
     
     sessions_in_window = filter_by_week(sessions, week_start, week_end)
     logger.info(f"Found {len(sessions_in_window)} sessions in window.")
+
+    # 3b. Completeness Gate
+    from src.week_completeness import is_week_complete
+    
+    # We check ALL sessions (not just filtered in window) or just sessions in window?
+    # Actually, kinoprogramm logic is rolling. If we check 'sessions_in_window' for completeness, 
+    # and the window is the target week, then max(sessions_in_window) tells us how far we have data FOR THAT WEEK.
+    # However, if sessions_in_window is empty (early Monday), max() fails. 
+    # Let's use `sessions` (all parsed) to determine horizon, but compare against week_end.
+    
+    is_complete = is_week_complete(sessions, week_start, week_end)
+    
+    max_dt = max(s.dt_local for s in sessions) if sessions else "None"
+    required_wed = week_end - timedelta(days=1)
+    
+    logger.info(f"Completeness check: max_dt={max_dt}, required>={required_wed}. Complete={is_complete}")
+    
+    if not is_complete and not args.dry_run:
+        logger.info("Week schedule incomplete (horizon too short). Skipping.")
+        return
 
     # 4. Filter OV
     from src.ov_filter import filter_ov_sessions
