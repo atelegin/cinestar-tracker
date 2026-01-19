@@ -1,6 +1,8 @@
 name: CineStar Konstanz OV Bot
 
 on:
+  push:
+    branches: [ "main" ]
   schedule:
     # Robust option (DST-proof): run every 6 hours in UTC
     - cron: "0 */6 * * *"
