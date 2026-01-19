@@ -44,6 +44,7 @@ def load_state(path: str = "state/state.json") -> dict:
         return json.load(f)
 
 def save_state(state: dict, path: str = "state/state.json"):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(state, f, indent=2)
 
