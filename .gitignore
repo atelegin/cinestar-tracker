@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+.DS_Store
+
+# Explicitly allow state.json
+!state/state.json
+debug_html.html
