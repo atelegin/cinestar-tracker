@@ -36,12 +36,6 @@ jobs:
           python3 -m pip install --upgrade pip
           pip3 install -r requirements.txt
 
-      - name: Debug Connection with curl
-        run: |
-          curl -v -4 --ipv4 --connect-timeout 20 \
-            -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15" \
-            https://www.kinoprogramm.com/kino/konstanz-universitaetsstadt/cinestar-konstanz-60996 || echo "Curl failed"
-
       - name: Run bot (send)
         run: |
           python3 -m src.main --send
