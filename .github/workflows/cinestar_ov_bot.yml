@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   run-bot:
-    runs-on: [self-hosted, macOS]
+    runs-on: self-hosted
     env:
       TZ: Europe/Berlin
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
