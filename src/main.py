@@ -139,12 +139,16 @@ def main():
         logger.info("Send mode active.")
         
         # Load State
-        from src.state import load_state as load_app_state, save_state as save_app_state, compute_content_hash
+        # Load State
+        from src.state import load_state as load_app_state, save_state as save_app_state, compute_content_hash, STATE_PATH
         import os
         
         state = load_app_state()
         last_start = state.get("last_sent_week_start")
         
+        logger.info(f"STATE_PATH={STATE_PATH}")
+        logger.info(f"week_start_str={week_start_str} last_sent={state.get('last_sent_week_start')}")
+
         if last_start == week_start_str and not args.force:
             logger.info(f"Week {week_start_str} already sent. Skipping.")
             return

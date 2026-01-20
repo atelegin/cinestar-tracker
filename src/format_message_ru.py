@@ -6,12 +6,14 @@ def format_date_ru(dt: datetime) -> str:
     return f"{days[dt.weekday()]} {dt.strftime('%d.%m %H:%M')}"
 
 def _week_range_compact(week_start: datetime, week_end: datetime) -> str:
-    # week_end ожидается как конец окна (следующий четверг), показываем до среды:
-    end = week_end.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_minus_1 = end.fromtimestamp(end.timestamp() - 24*3600)
-    if week_start.month == end_minus_1.month:
-        return f"{week_start.day}–{end_minus_1.strftime('%d.%m')}"
-    return f"{week_start.strftime('%d.%m')}–{end_minus_1.strftime('%d.%m')}"
+    # week_end is actually next Thursday (start + 7 days) in kinoprogramm logic
+    # We want to display Thu -> Wed (which is start + 6 days)
+    from datetime import timedelta
+    display_end = week_start + timedelta(days=6)
+    
+    if week_start.month == display_end.month:
+        return f"{week_start.day}–{display_end.strftime('%d.%m')}"
+    return f"{week_start.strftime('%d.%m')}–{display_end.strftime('%d.%m')}"
 
 def format_message(week_start: datetime, week_end: datetime, items: list[dict]) -> str:
     header = f"🎬 CineStar Konstanz — OV ({_week_range_compact(week_start, week_end)})"
