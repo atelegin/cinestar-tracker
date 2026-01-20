@@ -1,6 +1,9 @@
 {
-    "last_sent_week_start": "2026-01-15",
-    "last_hash": "restored_manually",
-    "tmdb_cache": {},
-    "cinestar_cache": {}
+  "last_sent_week_start": "2026-01-15",
+  "last_hash": "restored_manually",
+  "tmdb_cache": {
+    "The Housemaid - Wenn sie w\u00fcsste": 1368166,
+    "Song Sung Blue": 1371185
+  },
+  "cinestar_cache": {}
 }
