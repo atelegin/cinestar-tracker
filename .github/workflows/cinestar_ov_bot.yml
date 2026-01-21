@@ -18,6 +18,7 @@ permissions:
 jobs:
   run-bot:
     runs-on: self-hosted
+    timeout-minutes: 5
     env:
       TZ: Europe/Berlin
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
