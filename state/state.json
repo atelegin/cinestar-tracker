@@ -1,9 +1,11 @@
 {
-  "last_sent_week_start": "2026-01-15",
-  "last_hash": "restored_manually",
+  "cinestar_cache": {},
+  "last_hash": "86e5fee05fd657931bbfc60911cb77bd0404b5153297f141a61b0ad7d493c5d0",
+  "last_sent_week_start": "2026-01-22",
   "tmdb_cache": {
-    "The Housemaid - Wenn sie w\u00fcsste": 1368166,
-    "Song Sung Blue": 1371185
-  },
-  "cinestar_cache": {}
+    "Avatar: Fire And Ash": 83533,
+    "Hamnet": 858024,
+    "Song Sung Blue": 1371185,
+    "The Housemaid - Wenn sie wüsste": 1368166
+  }
 }
