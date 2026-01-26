@@ -1,4 +1,4 @@
-kinoprogramm_url: "https://kinoprogramm.com/kino/cinestar-konstanz"
+kinoprogramm_url: "https://www.kinoprogramm.com/kino/konstanz-universitaetsstadt/cinestar-konstanz"
 timezone: "Europe/Berlin"
 request_timeout: 15
 request_retries: 2
