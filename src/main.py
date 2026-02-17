@@ -83,7 +83,7 @@ def main():
     from src.cinestar_link import resolve_cinestar_url
     
     grouped = {}
-    missing_titles = set()
+    missing_titles = {}
     
     # Group
     for s in ov_sessions:
@@ -100,9 +100,9 @@ def main():
         earliest_session = sessions_list[0]
         
         # TMDb
-        tmdb_id, _ = resolve_tmdb_id(norm_title)
+        tmdb_id, reason = resolve_tmdb_id(norm_title)
         if not tmdb_id:
-             missing_titles.add(norm_title)
+             missing_titles[norm_title] = reason
              
         # Link
         c_url = resolve_cinestar_url(norm_title, earliest_session.film_url)
@@ -131,7 +131,8 @@ def main():
         if args.dump_missing:
             print("--- Missing Overrides Candidates (YAML) ---")
             for t in sorted(missing_titles):
-                print(f'"{t}": # TODO_ID')
+                reason = missing_titles[t]
+                print(f'"{t}": # TODO_ID ({reason})')
             print("-------------------------------------------\n")
 
     
