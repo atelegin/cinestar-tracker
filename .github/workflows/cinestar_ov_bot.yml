@@ -36,8 +36,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements.txt
+          python3 -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
 
       - name: Pull latest state
         run: |
@@ -45,7 +47,8 @@ jobs:
 
       - name: Run bot (send)
         run: |
-          python3 -m src.main --send
+          . .venv/bin/activate
+          python -m src.main --send
 
       - name: Commit updated state (if changed)
         run: |
