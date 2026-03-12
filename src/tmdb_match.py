@@ -3,9 +3,10 @@ import logging
 import os
 import requests
 import yaml
-import json
 from functools import lru_cache
 from typing import Optional
+
+from src.state import load_state, save_state
 
 logger = logging.getLogger(__name__)
 
@@ -66,17 +67,6 @@ def load_overrides(path: str = "config/overrides.yaml") -> dict:
         return {}
     with open(path, "r") as f:
         return yaml.safe_load(f) or {}
-
-def load_state(path: str = "state/state.json") -> dict:
-    if not os.path.exists(path):
-        return {"tmdb_cache": {}}
-    with open(path, "r") as f:
-        return json.load(f)
-
-def save_state(state: dict, path: str = "state/state.json"):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(state, f, indent=2)
 
 def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple[Optional[int], str]:
     if not api_key:

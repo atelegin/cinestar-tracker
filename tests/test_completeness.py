@@ -1,5 +1,3 @@
-
-import pytest
 from datetime import datetime, timedelta
 import pytz
 from src.parse_schedule import Session

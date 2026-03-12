@@ -1,8 +1,6 @@
 name: CineStar Konstanz OV Bot
 
 on:
-  push:
-    branches: [ "main" ]
   schedule:
     # Robust option (DST-proof): run every 6 hours in UTC
     - cron: "0 */6 * * *"
@@ -30,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Check Python
         run: python3 --version
@@ -43,7 +42,9 @@ jobs:
 
       - name: Pull latest state
         run: |
-          git pull --rebase origin main || true
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
 
       - name: Run bot (send)
         run: |
@@ -63,5 +64,5 @@ jobs:
 
           git add state/state.json
           git commit -m "Update bot state [skip ci]"
-          git pull --rebase
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main

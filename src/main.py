@@ -139,19 +139,31 @@ def main():
     if args.send:
         logger.info("Send mode active.")
         
-        # Load State
-        # Load State
-        from src.state import load_state as load_app_state, save_state as save_app_state, compute_content_hash, STATE_PATH
+        # Load state and compare against both the latest send marker and per-week hash history.
+        from src.state import (
+            STATE_PATH,
+            compute_content_hash,
+            load_state as load_app_state,
+            record_sent_week,
+            save_state as save_app_state,
+            was_week_already_sent,
+        )
         import os
         
         state = load_app_state()
-        last_start = state.get("last_sent_week_start")
+        last_hash = state.get("last_hash")
+        sent_hashes_by_week = state.get("sent_hashes_by_week")
+        week_hash = sent_hashes_by_week.get(week_start_str) if isinstance(sent_hashes_by_week, dict) else None
+        current_hash = compute_content_hash(final_items)
         
         logger.info(f"STATE_PATH={STATE_PATH}")
-        logger.info(f"week_start_str={week_start_str} last_sent={state.get('last_sent_week_start')}")
+        logger.info(
+            f"week_start_str={week_start_str} last_sent={state.get('last_sent_week_start')} "
+            f"last_hash={last_hash} week_hash={week_hash} current_hash={current_hash}"
+        )
 
-        if last_start == week_start_str and not args.force:
-            logger.info(f"Week {week_start_str} already sent. Skipping.")
+        if was_week_already_sent(state, week_start_str, current_hash) and not args.force:
+            logger.info(f"Week {week_start_str} already sent or matched prior content hash. Skipping.")
             return
 
         # Prepare to send
@@ -166,8 +178,7 @@ def main():
         success = send_message(token, chat_id, msg_text)
         
         if success:
-            state["last_sent_week_start"] = week_start_str
-            state["last_hash"] = compute_content_hash(final_items)
+            record_sent_week(state, week_start_str, current_hash)
             save_app_state(state)
             logger.info(f"State updated: Week {week_start_str} sent.")
         else:

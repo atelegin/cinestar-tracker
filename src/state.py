@@ -4,7 +4,6 @@ import hashlib
 import tempfile
 import logging
 from pathlib import Path
-from typing import Optional, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +13,13 @@ STATE_PATH = REPO_ROOT / "state" / "state.json"
 DEFAULT_STATE = {
     "last_sent_week_start": None,
     "last_hash": None,
+    "sent_hashes_by_week": {},
     "tmdb_cache": {},
     "cinestar_cache": {}
 }
+
+MAX_SENT_HASH_HISTORY = 16
+
 
 def load_state() -> dict:
     if not STATE_PATH.exists():
@@ -40,6 +43,41 @@ def save_state(state: dict):
         f.write(payload)
         tmp = f.name
     os.replace(tmp, STATE_PATH)
+
+
+def was_week_already_sent(state: dict, week_start_str: str, current_hash: str) -> bool:
+    if state.get("last_sent_week_start") == week_start_str:
+        return True
+
+    sent_hashes_by_week = state.get("sent_hashes_by_week")
+    if not isinstance(sent_hashes_by_week, dict):
+        return False
+
+    return sent_hashes_by_week.get(week_start_str) == current_hash
+
+
+def record_sent_week(
+    state: dict,
+    week_start_str: str,
+    current_hash: str,
+    max_history: int = MAX_SENT_HASH_HISTORY,
+) -> dict:
+    state["last_sent_week_start"] = week_start_str
+    state["last_hash"] = current_hash
+
+    sent_hashes_by_week = state.get("sent_hashes_by_week")
+    if not isinstance(sent_hashes_by_week, dict):
+        sent_hashes_by_week = {}
+
+    sent_hashes_by_week[week_start_str] = current_hash
+    if len(sent_hashes_by_week) > max_history:
+        oldest_weeks = sorted(sent_hashes_by_week.keys())[:-max_history]
+        for old_week in oldest_weeks:
+            sent_hashes_by_week.pop(old_week, None)
+
+    state["sent_hashes_by_week"] = sent_hashes_by_week
+    return state
+
 
 def compute_content_hash(items: list[dict]) -> str:
     """
