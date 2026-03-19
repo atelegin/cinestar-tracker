@@ -46,14 +46,14 @@ def save_state(state: dict):
 
 
 def was_week_already_sent(state: dict, week_start_str: str, current_hash: str) -> bool:
-    if state.get("last_sent_week_start") == week_start_str:
-        return True
-
     sent_hashes_by_week = state.get("sent_hashes_by_week")
-    if not isinstance(sent_hashes_by_week, dict):
+    if isinstance(sent_hashes_by_week, dict) and week_start_str in sent_hashes_by_week:
+        return sent_hashes_by_week.get(week_start_str) == current_hash
+
+    if state.get("last_sent_week_start") != week_start_str:
         return False
 
-    return sent_hashes_by_week.get(week_start_str) == current_hash
+    return state.get("last_hash") == current_hash
 
 
 def record_sent_week(
@@ -83,23 +83,25 @@ def compute_content_hash(items: list[dict]) -> str:
     """
     Computes deterministic SHA256 hash of the content items.
     Items should be a list of dicts with: 
-      title (normalized), session (obj with dt_local), tmdb_id, cinestar_url
+      title (normalized), session/sessions (obj(s) with dt_local), tmdb_id, cinestar_url
     """
     stable_list = []
     for item in items:
-        s = item['session']
-        # Convert dt to isoformat string
-        dt_str = s.dt_local.isoformat()
+        sessions = item.get("sessions")
+        if not sessions:
+            sessions = [item['session']]
+
+        dt_list = sorted(session.dt_local.isoformat() for session in sessions)
         
         stable_list.append({
             "title": item['title'],
-            "dt": dt_str,
+            "dts": dt_list,
             "tmdb_id": item['tmdb_id'],
             "cinestar_url": item.get('cinestar_url') # Handles None gracefully
         })
         
-    # Sort by title, then dt
-    stable_list.sort(key=lambda x: (x['title'], x['dt']))
+    # Sort by title, then session list
+    stable_list.sort(key=lambda x: (x['title'], tuple(x['dts'])))
     
     # Serialize with tight separators
     dump_str = json.dumps(stable_list, sort_keys=True, ensure_ascii=False, separators=(",", ":"))

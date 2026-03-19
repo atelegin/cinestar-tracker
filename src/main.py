@@ -95,7 +95,6 @@ def main():
     final_items = []
     
     for norm_title, sessions_list in grouped.items():
-        # Earliest session
         sessions_list.sort(key=lambda x: x.dt_local)
         earliest_session = sessions_list[0]
         
@@ -110,6 +109,7 @@ def main():
         final_items.append({
             'title': norm_title,
             'session': earliest_session,
+            'sessions': list(sessions_list),
             'tmdb_id': tmdb_id,
             'cinestar_url': c_url
         })

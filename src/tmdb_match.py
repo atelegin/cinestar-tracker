@@ -21,6 +21,7 @@ GERMAN_HINT_REGEX = re.compile(
     re.IGNORECASE
 )
 QUOTE_CHARS_REGEX = re.compile(r'["“”„«»]')
+TITLE_SEPARATOR_REGEX = re.compile(r"\s[-–—]\s")
 
 def normalize_title(title_raw: str) -> str:
     # 1. Strip markers
@@ -41,7 +42,8 @@ def normalize_title(title_raw: str) -> str:
 def build_search_variants(title_norm: str) -> list[str]:
     """
     Build fallback variants for TMDb search.
-    Primary title is always first. For "EN - DE" patterns we add EN part.
+    Primary title is always first. For localized "DE - EN" / "EN - DE"
+    patterns we also try the likely original-language half.
     """
     variants = []
 
@@ -52,12 +54,22 @@ def build_search_variants(title_norm: str) -> list[str]:
 
     add_variant(title_norm)
 
-    if " - " in title_norm:
-        left, right = title_norm.split(" - ", 1)
+    separator_match = TITLE_SEPARATOR_REGEX.search(title_norm)
+    if separator_match:
+        left, right = TITLE_SEPARATOR_REGEX.split(title_norm, maxsplit=1)
         left = left.strip()
         right = right.strip()
-        if left and right and GERMAN_HINT_REGEX.search(right):
-            add_variant(left)
+        left_looks_german = bool(GERMAN_HINT_REGEX.search(left))
+        right_looks_german = bool(GERMAN_HINT_REGEX.search(right))
+
+        if left and right:
+            if left_looks_german and not right_looks_german:
+                add_variant(right)
+            elif right_looks_german and not left_looks_german:
+                add_variant(left)
+            else:
+                add_variant(right)
+                add_variant(left)
 
     return variants
 

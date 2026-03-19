@@ -15,6 +15,14 @@ def _week_range_compact(week_start: datetime, week_end: datetime) -> str:
         return f"{week_start.day}–{display_end.strftime('%d.%m')}"
     return f"{week_start.strftime('%d.%m')}–{display_end.strftime('%d.%m')}"
 
+def _format_sessions_ru(item: dict) -> str:
+    sessions = item.get("sessions")
+    if not sessions:
+        sessions = [item["session"]]
+
+    ordered_sessions = sorted(sessions, key=lambda session: session.dt_local)
+    return ", ".join(format_date_ru(session.dt_local) for session in ordered_sessions)
+
 def format_message(week_start: datetime, week_end: datetime, items: list[dict]) -> str:
     header = f"🎬 CineStar Konstanz — OV ({_week_range_compact(week_start, week_end)})"
     lines = [header, ""]
@@ -25,8 +33,7 @@ def format_message(week_start: datetime, week_end: datetime, items: list[dict]) 
 
     for item in items:
         title = escape(item["title"])
-        s = item["session"]
-        dt = format_date_ru(s.dt_local)
+        dt = _format_sessions_ru(item)
 
         ticket_url = item.get("cinestar_url")  # CineStar preferred, иначе fallback (kinoprogramm)
         tmdb_id = item.get("tmdb_id")
