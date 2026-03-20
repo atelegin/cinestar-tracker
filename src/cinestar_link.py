@@ -4,6 +4,7 @@ import requests
 import logging
 
 logger = logging.getLogger(__name__)
+TITLE_SEPARATOR_REGEX = re.compile(r"\s[-–—]\s")
 
 def slugify_cinestar(title: str) -> str:
     """
@@ -18,6 +19,23 @@ def slugify_cinestar(title: str) -> str:
     # Collapse dashes and strip
     t = re.sub(r'-+', '-', t).strip('-')
     return t
+
+def build_cinestar_slug_candidates(title_norm: str) -> list[str]:
+    candidates = []
+
+    def add_candidate(candidate_title: str) -> None:
+        slug = slugify_cinestar(candidate_title.strip())
+        if slug and slug not in candidates:
+            candidates.append(slug)
+
+    add_candidate(title_norm)
+
+    if TITLE_SEPARATOR_REGEX.search(title_norm):
+        left, right = TITLE_SEPARATOR_REGEX.split(title_norm, maxsplit=1)
+        add_candidate(left)
+        add_candidate(right)
+
+    return candidates
 
 def resolve_cinestar_url(title_norm: str, kinoprogramm_film_url: Optional[str]) -> Optional[str]:
     """
@@ -43,10 +61,7 @@ def resolve_cinestar_url(title_norm: str, kinoprogramm_film_url: Optional[str]) 
     # Base URL for CineStar Konstanz
     base_url = "https://www.cinestar.de/kino-konstanz/film"
     
-    slug = slugify_cinestar(title_norm)
-    candidates = [slug]
-    
-    # Try removing "the" if present? Maybe later. For now just title_norm slug.
+    candidates = build_cinestar_slug_candidates(title_norm)
     
     headers = {
         "User-Agent": "Mozilla/5.0",
