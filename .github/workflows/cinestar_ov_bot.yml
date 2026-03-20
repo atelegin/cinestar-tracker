@@ -4,7 +4,13 @@ on:
   schedule:
     # Robust option (DST-proof): run every 6 hours in UTC
     - cron: "0 */6 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_send:
+        description: "Force Telegram send even if this week/hash was already recorded"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: cinestar-ov-bot
@@ -49,7 +55,11 @@ jobs:
       - name: Run bot (send)
         run: |
           . .venv/bin/activate
-          python -m src.main --send
+          if [ "${{ github.event.inputs.force_send || 'false' }}" = "true" ]; then
+            python -m src.main --send --force
+          else
+            python -m src.main --send
+          fi
 
       - name: Commit updated state (if changed)
         run: |

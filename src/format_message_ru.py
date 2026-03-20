@@ -37,15 +37,16 @@ def format_message(week_start: datetime, week_end: datetime, items: list[dict]) 
 
         ticket_url = item.get("cinestar_url")  # CineStar preferred, иначе fallback (kinoprogramm)
         tmdb_id = item.get("tmdb_id")
+        title_html = title
+        if tmdb_id:
+            title_html = f'<a href="https://letterboxd.com/tmdb/{tmdb_id}/">{title}</a>'
 
         links = []
         if ticket_url:
             links.append(f'<a href="{escape(ticket_url)}">🎟 Билеты</a>')
-        if tmdb_id:
-            links.append(f'<a href="https://letterboxd.com/tmdb/{tmdb_id}/">🎞 LB</a>')
 
         # одна строка, очень компактно
         tail = f" — {' · '.join(links)}" if links else ""
-        lines.append(f"• {title} — {dt}{tail}")
+        lines.append(f"• {title_html} — {dt}{tail}")
 
     return "\n".join(lines)

@@ -39,4 +39,5 @@ def test_format_message_lists_all_sessions_for_one_title():
     )
 
     assert "Сб 21.03 22:45, Вс 22.03 19:45" in message
-    assert 'https://letterboxd.com/tmdb/687163/' in message
+    assert '<a href="https://letterboxd.com/tmdb/687163/">Der Astronaut - Project Hail Mary</a>' in message
+    assert "🎞 LB" not in message
