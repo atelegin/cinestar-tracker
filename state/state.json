@@ -1,10 +1,10 @@
 {
   "cinestar_cache": {},
-  "last_hash": "78d6c5ff9d27734c5e3675e061f9001d6a0b4e4f4854fbd0f48b1d0ef9608696",
+  "last_hash": "3c82e6d94da7d33bc7330d9d79bbfa644e8d1df84da0234b46431fbbb7e673e4",
   "last_sent_week_start": "2026-03-19",
   "sent_hashes_by_week": {
     "2026-03-12": "25e65b8d5c67acfe9c9dfb5c1a6e4de63a2117ea0c112e14b9230a4eebe12e2a",
-    "2026-03-19": "78d6c5ff9d27734c5e3675e061f9001d6a0b4e4f4854fbd0f48b1d0ef9608696"
+    "2026-03-19": "3c82e6d94da7d33bc7330d9d79bbfa644e8d1df84da0234b46431fbbb7e673e4"
   },
   "tmdb_cache": {
     "Avatar: Fire And Ash": 83533,
