@@ -43,7 +43,7 @@ def format_message(week_start: datetime, week_end: datetime, items: list[dict]) 
 
         links = []
         if ticket_url:
-            links.append(f'<a href="{escape(ticket_url)}">🎟 Билеты</a>')
+            links.append(f'<a href="{escape(ticket_url)}">⭐ Билеты</a>')
 
         # одна строка, очень компактно
         tail = f" — {' · '.join(links)}" if links else ""
