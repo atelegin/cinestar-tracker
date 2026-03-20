@@ -79,7 +79,7 @@ def main():
         return
 
     # 5. Prepare Data (TMDb, CineStar Link, Selection)
-    from src.tmdb_match import normalize_title, resolve_tmdb_id
+    from src.tmdb_match import get_tmdb_original_title, normalize_title, resolve_tmdb_id
     from src.cinestar_link import resolve_cinestar_url
     
     grouped = {}
@@ -100,11 +100,12 @@ def main():
         
         # TMDb
         tmdb_id, reason = resolve_tmdb_id(norm_title)
+        tmdb_original_title = get_tmdb_original_title(tmdb_id) if tmdb_id else None
         if not tmdb_id:
              missing_titles[norm_title] = reason
              
         # Link
-        c_url = resolve_cinestar_url(norm_title, earliest_session.film_url)
+        c_url = resolve_cinestar_url(norm_title, earliest_session.film_url, tmdb_original_title)
         
         final_items.append({
             'title': norm_title,

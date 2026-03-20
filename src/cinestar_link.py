@@ -2,6 +2,7 @@ from typing import Optional
 import re
 import requests
 import logging
+import unicodedata
 
 logger = logging.getLogger(__name__)
 TITLE_SEPARATOR_REGEX = re.compile(r"\s[-–—]\s")
@@ -20,24 +21,52 @@ def slugify_cinestar(title: str) -> str:
     t = re.sub(r'-+', '-', t).strip('-')
     return t
 
-def build_cinestar_slug_candidates(title_norm: str) -> list[str]:
-    candidates = []
+def slugify_cinestar_loose(title: str) -> str:
+    """
+    Fallback slugifier for CineStar pages that drop umlauts instead of using ae/oe/ue.
+    """
+    t = unicodedata.normalize("NFKD", title.lower())
+    t = "".join(ch for ch in t if not unicodedata.combining(ch))
+    t = t.replace('ß', 'ss')
+    t = re.sub(r'[^a-z0-9]+', '-', t)
+    t = re.sub(r'-+', '-', t).strip('-')
+    return t
 
-    def add_candidate(candidate_title: str) -> None:
-        slug = slugify_cinestar(candidate_title.strip())
-        if slug and slug not in candidates:
-            candidates.append(slug)
+def build_cinestar_slug_candidates(title_norm: str, original_title: Optional[str] = None) -> list[str]:
+    title_candidates = []
+    slug_candidates = []
 
-    add_candidate(title_norm)
+    def add_title_candidate(candidate_title: str) -> None:
+        candidate_title = candidate_title.strip()
+        if candidate_title and candidate_title not in title_candidates:
+            title_candidates.append(candidate_title)
+
+    def add_slug_candidate(slug: str) -> None:
+        if slug and slug not in slug_candidates:
+            slug_candidates.append(slug)
+
+    add_title_candidate(title_norm)
 
     if TITLE_SEPARATOR_REGEX.search(title_norm):
         left, right = TITLE_SEPARATOR_REGEX.split(title_norm, maxsplit=1)
-        add_candidate(left)
-        add_candidate(right)
+        add_title_candidate(left)
+        add_title_candidate(right)
 
-    return candidates
+    if original_title and original_title.strip():
+        add_title_candidate(f"{title_norm} - {original_title.strip()}")
+        add_title_candidate(original_title)
 
-def resolve_cinestar_url(title_norm: str, kinoprogramm_film_url: Optional[str]) -> Optional[str]:
+    for candidate_title in title_candidates:
+        add_slug_candidate(slugify_cinestar(candidate_title))
+        add_slug_candidate(slugify_cinestar_loose(candidate_title))
+
+    return slug_candidates
+
+def resolve_cinestar_url(
+    title_norm: str,
+    kinoprogramm_film_url: Optional[str],
+    original_title: Optional[str] = None,
+) -> Optional[str]:
     """
     Tries to resolve https://www.cinestar.de/kino-konstanz/veranstaltung-on-<slugify(title_norm)>
     Usually their URLs look like: https://www.cinestar.de/kino-konstanz/veranstaltung-on-<slug>
@@ -61,7 +90,7 @@ def resolve_cinestar_url(title_norm: str, kinoprogramm_film_url: Optional[str]) 
     # Base URL for CineStar Konstanz
     base_url = "https://www.cinestar.de/kino-konstanz/film"
     
-    candidates = build_cinestar_slug_candidates(title_norm)
+    candidates = build_cinestar_slug_candidates(title_norm, original_title)
     
     headers = {
         "User-Agent": "Mozilla/5.0",

@@ -185,3 +185,23 @@ def resolve_tmdb_id(title_norm: str, year: int = None) -> tuple[Optional[int], s
         return tmdb_id, reason # 'match'
 
     return None, reason
+
+@lru_cache(maxsize=256)
+def get_tmdb_original_title(tmdb_id: int, api_key: str = None) -> Optional[str]:
+    if not api_key:
+        api_key = os.environ.get("TMDB_API_KEY")
+    if not api_key or not tmdb_id:
+        return None
+
+    url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+    params = {"api_key": api_key}
+
+    try:
+        resp = requests.get(url, params=params, timeout=5)
+        if resp.status_code != 200:
+            return None
+        original_title = resp.json().get("original_title")
+        return original_title.strip() if isinstance(original_title, str) and original_title.strip() else None
+    except Exception as e:
+        logger.warning(f"TMDb movie details failed for {tmdb_id}: {e}")
+        return None
