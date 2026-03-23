@@ -48,12 +48,9 @@ def save_state(state: dict):
 def was_week_already_sent(state: dict, week_start_str: str, current_hash: str) -> bool:
     sent_hashes_by_week = state.get("sent_hashes_by_week")
     if isinstance(sent_hashes_by_week, dict) and week_start_str in sent_hashes_by_week:
-        return sent_hashes_by_week.get(week_start_str) == current_hash
+        return True
 
-    if state.get("last_sent_week_start") != week_start_str:
-        return False
-
-    return state.get("last_hash") == current_hash
+    return state.get("last_sent_week_start") == week_start_str
 
 
 def record_sent_week(

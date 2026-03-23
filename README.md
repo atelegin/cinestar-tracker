@@ -21,12 +21,12 @@ A Telegram bot that monitors [CineStar Konstanz](https://www.kinoprogramm.com/ki
 ### Workflow
 The bot runs on a schedule (`0 */6 * * *` UTC).
 - Checks for OV sessions for the *relevant* cinema week.
-- If sessions found and not yet sent: Sends Telegram message and updates `state/state.json`.
+- If sessions found and this cinema week has not yet been sent: Sends Telegram message and updates `state/state.json`.
 - Commits `state/state.json` back to the repository.
 
 ## Local Usage
 - **Smart Filtering**: Auto-detects OV/OmU screenings.
-- **Weekly Summary**: Sends one post per cinema-week (Thursday-Wednesday).
+- **Weekly Summary**: Sends one post per cinema-week (Thursday-Wednesday), without daily repeats as past sessions drop out of the window.
 - **Enriched Data**: Adds TMDb ratings and Letterboxd links if available.
 - **Reliable**: Runs via GitHub Actions cron, with state persistence to avoid duplicates.
 

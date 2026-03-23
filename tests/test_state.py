@@ -40,10 +40,10 @@ def test_was_week_already_sent_checks_week_hash_history():
     }
 
     assert was_week_already_sent(state, "2026-03-12", "hash-1") is True
-    assert was_week_already_sent(state, "2026-03-12", "hash-x") is False
+    assert was_week_already_sent(state, "2026-03-12", "hash-x") is True
 
 
-def test_was_week_already_sent_requires_matching_hash_for_same_week():
+def test_was_week_already_sent_blocks_any_repeat_for_same_week():
     state = {
         "last_sent_week_start": "2026-03-19",
         "last_hash": "hash-2",
@@ -53,7 +53,7 @@ def test_was_week_already_sent_requires_matching_hash_for_same_week():
     }
 
     assert was_week_already_sent(state, "2026-03-19", "hash-2") is True
-    assert was_week_already_sent(state, "2026-03-19", "hash-3") is False
+    assert was_week_already_sent(state, "2026-03-19", "hash-3") is True
 
 
 def test_record_sent_week_updates_and_prunes_history():
