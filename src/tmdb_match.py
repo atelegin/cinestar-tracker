@@ -85,11 +85,23 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
         return None, "no_api_key"
 
     url = "https://api.themoviedb.org/3/search/movie"
-    
+
     # Strategy: First de-DE, then en-US
     languages = ["de-DE", "en-US"]
     THRESHOLD = 80 # High threshold as requested
     best_overall_score = -1
+    # Cinema schedules are near-real-time, so without an explicit year we
+    # bias toward recent releases instead of simply picking the most popular
+    # match. Otherwise generic titles like "Michael" pick up the 1996 film
+    # (TMDB id 2928) that has a huge vote_count.
+    import datetime as _dt
+    current_year = _dt.datetime.now().year
+
+    def _cand_year(cand: dict) -> Optional[int]:
+        rd = cand.get("release_date") or ""
+        if len(rd) >= 4 and rd[:4].isdigit():
+            return int(rd[:4])
+        return None
 
     for query in build_search_variants(title_norm):
         candidates = []
@@ -132,15 +144,31 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
             elif query_lower in cand_title or query_lower in cand_orig:
                 score += 30
 
-            # Year match (+- 1 year tolerance could be added, but stricter for now)
-            if year and cand.get("release_date"):
-                cand_year = cand["release_date"][:4]
-                if str(year) == cand_year:
-                    score += 20
+            cand_year = _cand_year(cand)
 
-            # Tie breaker: vote count (normalized slightly to not dominate)
-            # Simple policy: score + (vote_count / 1000) max 10 points
-            score += min(cand.get("vote_count", 0) / 1000, 10)
+            if year:
+                # Explicit year comparison (strict; unchanged behavior).
+                if cand_year is not None and cand_year == year:
+                    score += 20
+            else:
+                # No input year: prefer recent releases, since the film is
+                # actually playing in a multiplex right now. Older entries
+                # (especially 30+ years) with the same exact title are almost
+                # always wrong.
+                if cand_year is not None:
+                    age = current_year - cand_year
+                    if age <= 3:
+                        score += 25
+                    elif age <= 10:
+                        score += 0
+                    elif age <= 30:
+                        score -= 10
+                    else:
+                        score -= 20
+
+            # Tie breaker: vote count kept as a *weak* signal only, so it
+            # cannot overpower the recency bias above.
+            score += min(cand.get("vote_count", 0) / 2000, 5)
 
             if score > best_score:
                 best_score = score
@@ -187,7 +215,8 @@ def resolve_tmdb_id(title_norm: str, year: int = None) -> tuple[Optional[int], s
     return None, reason
 
 @lru_cache(maxsize=256)
-def get_tmdb_original_title(tmdb_id: int, api_key: str = None) -> Optional[str]:
+def _get_tmdb_details(tmdb_id: int, api_key: str = None) -> Optional[dict]:
+    """Fetch /movie/{id} once and cache; helpers below read fields from it."""
     if not api_key:
         api_key = os.environ.get("TMDB_API_KEY")
     if not api_key or not tmdb_id:
@@ -200,8 +229,26 @@ def get_tmdb_original_title(tmdb_id: int, api_key: str = None) -> Optional[str]:
         resp = requests.get(url, params=params, timeout=5)
         if resp.status_code != 200:
             return None
-        original_title = resp.json().get("original_title")
-        return original_title.strip() if isinstance(original_title, str) and original_title.strip() else None
+        return resp.json()
     except Exception as e:
         logger.warning(f"TMDb movie details failed for {tmdb_id}: {e}")
         return None
+
+
+def get_tmdb_original_title(tmdb_id: int, api_key: str = None) -> Optional[str]:
+    data = _get_tmdb_details(tmdb_id, api_key)
+    if not data:
+        return None
+    original_title = data.get("original_title")
+    return original_title.strip() if isinstance(original_title, str) and original_title.strip() else None
+
+
+def get_tmdb_release_year(tmdb_id: int, api_key: str = None) -> Optional[int]:
+    """Return the release year (int) for a TMDb movie id, or None."""
+    data = _get_tmdb_details(tmdb_id, api_key)
+    if not data:
+        return None
+    rd = data.get("release_date") or ""
+    if len(rd) >= 4 and rd[:4].isdigit():
+        return int(rd[:4])
+    return None
