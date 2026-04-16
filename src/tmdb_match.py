@@ -105,6 +105,10 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
 
     for query in build_search_variants(title_norm):
         candidates = []
+        seen_ids = set()
+        # Query both languages and merge: a recent local-language release
+        # (e.g. an Indian "Michael" 2025) may only show up in en-US while
+        # an older German/Austrian film dominates de-DE. Deduplicate by id.
         for lang in languages:
             params = {
                 "api_key": api_key,
@@ -118,10 +122,12 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
                 resp = requests.get(url, params=params, timeout=5)
                 if resp.status_code == 200:
                     results = resp.json().get("results", [])
-                    if results:
-                        candidates.extend(results)
-                        # Keep current behavior: prefer first language with results.
-                        break
+                    for r in results:
+                        rid = r.get("id")
+                        if rid is None or rid in seen_ids:
+                            continue
+                        seen_ids.add(rid)
+                        candidates.append(r)
             except Exception as e:
                 logger.warning(f"TMDb search failed for {query} ({lang}): {e}")
 
@@ -178,6 +184,15 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
             best_overall_score = best_score
 
         if best_candidate and best_score >= THRESHOLD:
+            # Safety net: when we don't know the input year, refuse to return
+            # a match that's more than ~15 years old. CineStar plays current
+            # releases; a decade-old "Michael" (1996 or 2011) almost certainly
+            # isn't the film actually on screen, and a missing Letterboxd
+            # link is strictly better than one pointing at the wrong film.
+            if not year:
+                best_year = _cand_year(best_candidate)
+                if best_year is not None and (current_year - best_year) > 15:
+                    return None, f"best_too_old_{best_year}"
             if query == title_norm:
                 return best_candidate["id"], "match"
             return best_candidate["id"], f"match_variant:{query}"
