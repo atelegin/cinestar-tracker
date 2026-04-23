@@ -1,19 +1,22 @@
 {
   "cinestar_cache": {},
-  "last_hash": "893e27f9d082ce3e1fa913098133d71f95db4ba3f9874dbe0220cbf771ca5360",
-  "last_sent_week_start": "2026-04-16",
+  "last_hash": "b2d02682316082c00ca1bc839690a1b8a8f0f0aa3c864977cb864bb88f053c3c",
+  "last_sent_week_start": "2026-04-23",
   "sent_hashes_by_week": {
     "2026-03-12": "25e65b8d5c67acfe9c9dfb5c1a6e4de63a2117ea0c112e14b9230a4eebe12e2a",
     "2026-03-19": "36cee3b50f41cbc64ca29b8b072023edec8be50f5f2ec36e77a439629ca2bd74",
     "2026-03-26": "4a4fd5085c6bb4ed995cb2f837a25ed2ec7c299923c017464232f136269ac6d9",
     "2026-04-02": "eedbb7fc217daac01754aa58fb965a0cbe915ba238377fb8f93660b13c67e083",
     "2026-04-09": "b1097e14e84c70269c6b3f9856c25ab02426bba6162350eaf57f3c87d3d190b7",
-    "2026-04-16": "893e27f9d082ce3e1fa913098133d71f95db4ba3f9874dbe0220cbf771ca5360"
+    "2026-04-16": "893e27f9d082ce3e1fa913098133d71f95db4ba3f9874dbe0220cbf771ca5360",
+    "2026-04-23": "b2d02682316082c00ca1bc839690a1b8a8f0f0aa3c864977cb864bb88f053c3c"
   },
   "tmdb_cache": {
+    "Assassination Classroom The Movie: Our Time": 1542877,
     "Avatar: Fire And Ash": 83533,
     "Das Drama - Noch mal auf Anfang": 1325734,
     "Der Super Mario Galaxy Film": 1226863,
+    "Der Teufel trägt Prada 2": 1314481,
     "Für immer ein Teil von dir": 1367642,
     "Hamnet": 858024,
     "Hoppers": 1327819,
