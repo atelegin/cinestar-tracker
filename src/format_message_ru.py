@@ -1,9 +1,13 @@
 from datetime import datetime
 from html import escape
 
+DAY_NAMES_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+
 def format_date_ru(dt: datetime) -> str:
-    days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-    return f"{days[dt.weekday()]} {dt.strftime('%d.%m %H:%M')}"
+    return f"{DAY_NAMES_RU[dt.weekday()]} {dt.strftime('%d.%m %H:%M')}"
+
+def format_day_ru(dt: datetime) -> str:
+    return DAY_NAMES_RU[dt.weekday()]
 
 def _week_range_compact(week_start: datetime, week_end: datetime) -> str:
     # week_end is actually next Thursday (start + 7 days) in kinoprogramm logic
@@ -21,7 +25,25 @@ def _format_sessions_ru(item: dict) -> str:
         sessions = [item["session"]]
 
     ordered_sessions = sorted(sessions, key=lambda session: session.dt_local)
-    return ", ".join(format_date_ru(session.dt_local) for session in ordered_sessions)
+    grouped_sessions = []
+    current_dt = ordered_sessions[0].dt_local
+    current_date = current_dt.date()
+    current_times = []
+
+    for session in ordered_sessions:
+        dt = session.dt_local
+        session_date = dt.date()
+        if current_date != session_date:
+            grouped_sessions.append(f"{format_day_ru(current_dt)} {', '.join(current_times)}")
+            current_date = session_date
+            current_dt = dt
+            current_times = []
+        current_times.append(dt.strftime("%H:%M"))
+
+    if current_times:
+        grouped_sessions.append(f"{format_day_ru(current_dt)} {', '.join(current_times)}")
+
+    return "; ".join(grouped_sessions)
 
 def format_message(week_start: datetime, week_end: datetime, items: list[dict]) -> str:
     header = f"🎬 CineStar Konstanz — OV ({_week_range_compact(week_start, week_end)})"
