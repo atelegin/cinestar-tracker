@@ -1,7 +1,7 @@
 {
   "cinestar_cache": {},
-  "last_hash": "307cc4207532e602568fc61cb1a8fb5b2e45aea4f9a765313882089dd99ed923",
-  "last_sent_week_start": "2026-04-30",
+  "last_hash": "450436cf7414dd7ed4898ae49340ef92f4750c0fedf2f86ab4f00f3eb4460e12",
+  "last_sent_week_start": "2026-05-07",
   "sent_hashes_by_week": {
     "2026-03-12": "25e65b8d5c67acfe9c9dfb5c1a6e4de63a2117ea0c112e14b9230a4eebe12e2a",
     "2026-03-19": "36cee3b50f41cbc64ca29b8b072023edec8be50f5f2ec36e77a439629ca2bd74",
@@ -10,7 +10,8 @@
     "2026-04-09": "b1097e14e84c70269c6b3f9856c25ab02426bba6162350eaf57f3c87d3d190b7",
     "2026-04-16": "893e27f9d082ce3e1fa913098133d71f95db4ba3f9874dbe0220cbf771ca5360",
     "2026-04-23": "b2d02682316082c00ca1bc839690a1b8a8f0f0aa3c864977cb864bb88f053c3c",
-    "2026-04-30": "307cc4207532e602568fc61cb1a8fb5b2e45aea4f9a765313882089dd99ed923"
+    "2026-04-30": "307cc4207532e602568fc61cb1a8fb5b2e45aea4f9a765313882089dd99ed923",
+    "2026-05-07": "450436cf7414dd7ed4898ae49340ef92f4750c0fedf2f86ab4f00f3eb4460e12"
   },
   "tmdb_cache": {
     "Assassination Classroom The Movie: Our Time": 1542877,
@@ -25,6 +26,7 @@
     "Is This Thing On?": 1140498,
     "Marty Supreme": 1317288,
     "Michael": 936075,
+    "Nürnberg": 1214931,
     "One Battle After Another": 1054867,
     "Song Sung Blue": 1371185,
     "The Housemaid - Wenn sie wüsste": 1368166
