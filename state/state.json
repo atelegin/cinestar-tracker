@@ -1,7 +1,7 @@
 {
   "cinestar_cache": {},
-  "last_hash": "701936e1e9c12cab2e2d96bd52d39a8f8c54c8d54335c08933e6f8f4d278b47a",
-  "last_sent_week_start": "2026-05-28",
+  "last_hash": "822720f5492aa2ead13dafa3b3c4902585294c13d654f8dd0e57421ff904a51b",
+  "last_sent_week_start": "2026-06-04",
   "sent_hashes_by_week": {
     "2026-03-12": "25e65b8d5c67acfe9c9dfb5c1a6e4de63a2117ea0c112e14b9230a4eebe12e2a",
     "2026-03-19": "36cee3b50f41cbc64ca29b8b072023edec8be50f5f2ec36e77a439629ca2bd74",
@@ -14,7 +14,8 @@
     "2026-05-07": "450436cf7414dd7ed4898ae49340ef92f4750c0fedf2f86ab4f00f3eb4460e12",
     "2026-05-14": "9ebdef14780ee89a381d78f07e532270f5239933cd66e8a40a05c0326a5fb490",
     "2026-05-21": "2c60d72e2628a47424e7c8e5c0fdafa58ee984a7d56835a78dde54db50ad74f1",
-    "2026-05-28": "701936e1e9c12cab2e2d96bd52d39a8f8c54c8d54335c08933e6f8f4d278b47a"
+    "2026-05-28": "701936e1e9c12cab2e2d96bd52d39a8f8c54c8d54335c08933e6f8f4d278b47a",
+    "2026-06-04": "822720f5492aa2ead13dafa3b3c4902585294c13d654f8dd0e57421ff904a51b"
   },
   "tmdb_cache": {
     "Assassination Classroom The Movie: Our Time": 1542877,
@@ -22,6 +23,7 @@
     "Das Drama - Noch mal auf Anfang": 1325734,
     "Der Super Mario Galaxy Film": 1226863,
     "Der Teufel trägt Prada 2": 1314481,
+    "Disclosure Day - Der Tag der Wahrheit": 1275779,
     "Für immer ein Teil von dir": 1367642,
     "Glennkill: Ein Schafskrimi": 1301421,
     "Hamnet": 858024,
@@ -29,6 +31,7 @@
     "Iron Lung": 1116201,
     "Is This Thing On?": 1140498,
     "Marty Supreme": 1317288,
+    "Masters of the Universe": 454639,
     "Michael": 936075,
     "Nürnberg": 1214931,
     "One Battle After Another": 1054867,
