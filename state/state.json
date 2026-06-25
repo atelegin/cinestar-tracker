@@ -1,7 +1,7 @@
 {
   "cinestar_cache": {},
-  "last_hash": "b1a9a6984b2461ffb2b9747df9f91d24a9ab330ae4297a1b30e40aedb8b0a749",
-  "last_sent_week_start": "2026-06-18",
+  "last_hash": "cda71b5d28ae02c7541472375aa11e3450a68ccf8e5fbaae2539375b00ba14a7",
+  "last_sent_week_start": "2026-06-25",
   "sent_hashes_by_week": {
     "2026-03-12": "25e65b8d5c67acfe9c9dfb5c1a6e4de63a2117ea0c112e14b9230a4eebe12e2a",
     "2026-03-19": "36cee3b50f41cbc64ca29b8b072023edec8be50f5f2ec36e77a439629ca2bd74",
@@ -17,7 +17,8 @@
     "2026-05-28": "701936e1e9c12cab2e2d96bd52d39a8f8c54c8d54335c08933e6f8f4d278b47a",
     "2026-06-04": "822720f5492aa2ead13dafa3b3c4902585294c13d654f8dd0e57421ff904a51b",
     "2026-06-11": "49264da1ff6348539dff94f47ce630c1b83e8ec8cc6234e4cdd42801ee5a6e35",
-    "2026-06-18": "b1a9a6984b2461ffb2b9747df9f91d24a9ab330ae4297a1b30e40aedb8b0a749"
+    "2026-06-18": "b1a9a6984b2461ffb2b9747df9f91d24a9ab330ae4297a1b30e40aedb8b0a749",
+    "2026-06-25": "cda71b5d28ae02c7541472375aa11e3450a68ccf8e5fbaae2539375b00ba14a7"
   },
   "tmdb_cache": {
     "Assassination Classroom The Movie: Our Time": 1542877,
@@ -36,7 +37,9 @@
     "Marty Supreme": 1317288,
     "Masters of the Universe": 454639,
     "Michael": 936075,
+    "Minions & Monster": 1315772,
     "Nürnberg": 1214931,
+    "Obsession - Du sollst mich lieben": 1339713,
     "One Battle After Another": 1054867,
     "Scary Movie": 1273221,
     "Song Sung Blue": 1371185,
