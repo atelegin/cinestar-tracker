@@ -1,9 +1,8 @@
 {
   "cinestar_cache": {},
-  "last_hash": "35586569261cf03de53727ce3d2ce5d238e8cbd38acceaac70afd8747a56fc71",
-  "last_sent_week_start": "2026-07-09",
+  "last_hash": "0b3ea48bdf1dca4d1da1c64056125bdfc22f4a136dc99a0bf979c10240b1410b",
+  "last_sent_week_start": "2026-07-16",
   "sent_hashes_by_week": {
-    "2026-03-26": "4a4fd5085c6bb4ed995cb2f837a25ed2ec7c299923c017464232f136269ac6d9",
     "2026-04-02": "eedbb7fc217daac01754aa58fb965a0cbe915ba238377fb8f93660b13c67e083",
     "2026-04-09": "b1097e14e84c70269c6b3f9856c25ab02426bba6162350eaf57f3c87d3d190b7",
     "2026-04-16": "893e27f9d082ce3e1fa913098133d71f95db4ba3f9874dbe0220cbf771ca5360",
@@ -18,7 +17,8 @@
     "2026-06-18": "b1a9a6984b2461ffb2b9747df9f91d24a9ab330ae4297a1b30e40aedb8b0a749",
     "2026-06-25": "cda71b5d28ae02c7541472375aa11e3450a68ccf8e5fbaae2539375b00ba14a7",
     "2026-07-02": "58b952d89e4c434881e9f2ab258077bbbabe79d120126320414f06b10e8d4d56",
-    "2026-07-09": "35586569261cf03de53727ce3d2ce5d238e8cbd38acceaac70afd8747a56fc71"
+    "2026-07-09": "35586569261cf03de53727ce3d2ce5d238e8cbd38acceaac70afd8747a56fc71",
+    "2026-07-16": "0b3ea48bdf1dca4d1da1c64056125bdfc22f4a136dc99a0bf979c10240b1410b"
   },
   "tmdb_cache": {
     "Assassination Classroom The Movie: Our Time": 1542877,
@@ -27,6 +27,7 @@
     "Das Drama - Noch mal auf Anfang": 1325734,
     "Der Super Mario Galaxy Film": 1226863,
     "Der Teufel trägt Prada 2": 1314481,
+    "Die Odyssee": 1368337,
     "Disclosure Day - Der Tag der Wahrheit": 1275779,
     "Für immer ein Teil von dir": 1367642,
     "Glennkill: Ein Schafskrimi": 1301421,
