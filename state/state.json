@@ -1,6 +1,7 @@
 {
   "cinestar_cache": {},
-  "last_hash": "aa93e22f62db8815637999fb6aa8f290cdf8d6bacc528bab0cb0b12487722b49",
+  "health_alerts": {},
+  "last_hash": "2b29cdea6744161e033242a7858ad176378d7631712ab21b5145effe5ddf95cd",
   "last_sent_week_start": "2026-11-12",
   "sent_hashes_by_week": {
     "2026-05-14": "9ebdef14780ee89a381d78f07e532270f5239933cd66e8a40a05c0326a5fb490",
@@ -18,7 +19,7 @@
     "2026-08-06": "513a107f4ed7d162ae28e6c456b6208bb017b6576e5387449b31fef910e0c25e",
     "2026-08-13": "a21d950e0d30583718346b1ce7c9793c1e77ceaf88268351edc9eb2afb84aa0a",
     "2026-08-20": "6ae323b33282d4ea7459657c751425c4aa83e579618976d0733123f8dafe1d7f",
-    "2026-11-12": "aa93e22f62db8815637999fb6aa8f290cdf8d6bacc528bab0cb0b12487722b49"
+    "2026-11-12": "2b29cdea6744161e033242a7858ad176378d7631712ab21b5145effe5ddf95cd"
   },
   "tmdb_cache": {
     "Assassination Classroom The Movie: Our Time": 1542877,
@@ -29,10 +30,12 @@
     "Der Teufel trägt Prada 2": 1314481,
     "Die Odyssee": 1368337,
     "Disclosure Day - Der Tag der Wahrheit": 1275779,
+    "Ebenezer - Eine Weihnachtsgeschichte": 1567605,
     "Für immer ein Teil von dir": 1367642,
     "Glennkill: Ein Schafskrimi": 1301421,
     "Hamnet": 858024,
     "Hoppers": 1327819,
+    "How to Rob A Bank": 1291143,
     "Iron Lung": 1116201,
     "Is This Thing On?": 1140498,
     "Marty Supreme": 1317288,
@@ -48,6 +51,8 @@
     "Star Wars: The Mandalorian and Grogu": 1228710,
     "The Housemaid - Wenn sie wüsste": 1368166,
     "Toy Story 5": 1084244,
-    "Vaiana": 1108427
+    "Vaiana": 1108427,
+    "Wild Horse Nine": 891621,
+    "Wildwood": 791523
   }
 }
