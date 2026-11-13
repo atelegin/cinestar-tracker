@@ -114,55 +114,70 @@ def main():
     )
     from src.cinestar_link import resolve_cinestar_url
     
-    grouped = {}
     missing_titles = {}
-    
-    # Group
-    for s in ov_sessions:
-        norm = normalize_title(s.title)
-        if norm not in grouped:
-            grouped[norm] = []
-        grouped[norm].append(s)
-        
-    final_items = []
-    
-    for norm_title, sessions_list in grouped.items():
-        sessions_list.sort(key=lambda x: x.dt_local)
-        earliest_session = sessions_list[0]
-        
-        # TMDb
-        tmdb_id, reason = resolve_tmdb_id(norm_title)
-        tmdb_original_title = get_tmdb_original_title(tmdb_id) if tmdb_id else None
-        tmdb_year = get_tmdb_release_year(tmdb_id) if tmdb_id else None
-        if not tmdb_id:
-             missing_titles[norm_title] = reason
 
-        # Link — pass the TMDb year so we reject CineStar pages whose
-        # Produktionsjahr doesn't match (zombie detail pages for unrelated
-        # older films with the same title slug).
-        if (earliest_session.film_url or "").startswith("https://www.cinestar.de/"):
-            c_url = earliest_session.film_url
-        else:
-            c_url = resolve_cinestar_url(
-                norm_title,
-                earliest_session.film_url,
-                tmdb_original_title,
-                expected_year=tmdb_year,
-            )
-        
-        final_items.append({
-            'title': norm_title,
-            'session': earliest_session,
-            'sessions': list(sessions_list),
-            'tmdb_id': tmdb_id,
-            'cinestar_url': c_url
-        })
+    def build_items(ov_list):
+        grouped = {}
+        for s in ov_list:
+            grouped.setdefault(normalize_title(s.title), []).append(s)
+
+        items = []
+        for norm_title, sessions_list in grouped.items():
+            sessions_list.sort(key=lambda x: x.dt_local)
+            earliest_session = sessions_list[0]
+
+            tmdb_id, reason = resolve_tmdb_id(norm_title)
+            tmdb_original_title = get_tmdb_original_title(tmdb_id) if tmdb_id else None
+            tmdb_year = get_tmdb_release_year(tmdb_id) if tmdb_id else None
+            if not tmdb_id:
+                missing_titles[norm_title] = reason
+
+            # Link — pass the TMDb year so we reject CineStar pages whose
+            # Produktionsjahr doesn't match (zombie detail pages for unrelated
+            # older films with the same title slug).
+            if (earliest_session.film_url or "").startswith("https://www.cinestar.de/"):
+                c_url = earliest_session.film_url
+            else:
+                c_url = resolve_cinestar_url(
+                    norm_title,
+                    earliest_session.film_url,
+                    tmdb_original_title,
+                    expected_year=tmdb_year,
+                )
+
+            items.append({
+                'title': norm_title,
+                'session': earliest_session,
+                'sessions': list(sessions_list),
+                'tmdb_id': tmdb_id,
+                'cinestar_url': c_url
+            })
+        items.sort(key=lambda x: x['session'].dt_local)
+        return items
+
+    final_items = build_items(ov_sessions)
+
+    # 5b. Upcoming previews / special OV screenings after this cinema week.
+    # These are one-offs announced early (e.g. a preview on the next
+    # Thursday), so waiting for next week's message often means missing them.
+    upcoming_days = settings.get("upcoming_events_days", 14)
+    upcoming_ov = [
+        x for x in filter_ov_sessions(
+            filter_by_week(sessions, week_end, week_end + timedelta(days=upcoming_days)),
+            settings.get("ov_markers", []),
+        )
+        if getattr(x, "kind", "movie") == "event"
+    ]
+    this_week_titles = {i['title'] for i in final_items}
+    upcoming_items = [
+        i for i in build_items(upcoming_ov) if i['title'] not in this_week_titles
+    ]
+    logger.info(f"Upcoming special OV screenings: {len(upcoming_items)}")
     
-    final_items.sort(key=lambda x: x['session'].dt_local)
     
     # Format Message
     from src.format_message_ru import format_message
-    msg_text = format_message(week_start, week_end, final_items)
+    msg_text = format_message(week_start, week_end, final_items, upcoming_items)
     
     # --- PIPELINE END ---
 

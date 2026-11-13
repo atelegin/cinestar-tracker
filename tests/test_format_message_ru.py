@@ -69,3 +69,18 @@ def test_format_message_groups_multiple_sessions_by_day():
 
     assert "Сб 19:15, 22:30; Вс 11:45, 19:30" in message
     assert "Сб 02.05 19:15" not in message
+
+
+def test_upcoming_section_rendered():
+    from datetime import datetime
+    import pytz
+    from src.format_message_ru import format_message
+    from src.parse_schedule import Session
+    tz = pytz.timezone("Europe/Berlin")
+    s = Session("You Can See Everything", tz.localize(datetime(2026, 11, 19, 19, 0)),
+                "https://www.cinestar.de/kino-konstanz/veranstaltung-x", "OmU")
+    up = [{"title": "You Can See Everything", "session": s, "sessions": [s],
+           "tmdb_id": None, "cinestar_url": s.film_url}]
+    msg = format_message(datetime(2026, 11, 12), datetime(2026, 11, 19), [], up)
+    assert "Скоро" in msg
+    assert "You Can See Everything (OmU) — Чт 19.11 19:00" in msg
