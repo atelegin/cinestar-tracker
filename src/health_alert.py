@@ -13,6 +13,11 @@ logger = logging.getLogger(__name__)
 REPEAT_AFTER = timedelta(hours=24)
 
 MESSAGES = {
+    "api": (
+        "⚠️ CineStar-бот: API cinestar.de не отдал сеансы — временно беру данные "
+        "с kinoprogramm.com (там нет превью и спецпоказов).\n"
+        "{url}"
+    ),
     "parser": (
         "⚠️ CineStar-бот: на странице kinoprogramm.com не найдено ни одного сеанса.\n"
         "Скорее всего, сайт снова поменял вёрстку — парсер нужно обновить.\n"
