@@ -1,0 +1,77 @@
+"""Telegram alerts when the bot itself breaks (fetch failure, layout change).
+
+Alerts are deduplicated via state["health_alerts"] so a broken parser sends
+one message per day, not one every 6 hours. When things recover, a single
+"back to normal" message is sent and the alert is cleared.
+"""
+import logging
+import os
+from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger(__name__)
+
+REPEAT_AFTER = timedelta(hours=24)
+
+MESSAGES = {
+    "parser": (
+        "⚠️ CineStar-бот: на странице kinoprogramm.com не найдено ни одного сеанса.\n"
+        "Скорее всего, сайт снова поменял вёрстку — парсер нужно обновить.\n"
+        "{url}"
+    ),
+    "fetch": (
+        "⚠️ CineStar-бот: не удалось загрузить страницу kinoprogramm.com.\n"
+        "{url}"
+    ),
+}
+
+RECOVERY = "✅ CineStar-бот снова видит расписание ({count} сеансов)."
+
+
+def _send(text: str) -> bool:
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        logger.error("Cannot send health alert: Telegram credentials missing.")
+        return False
+    from src.telegram_send import send_message
+    try:
+        send_message(token, chat_id, text)
+        return True
+    except Exception as e:
+        logger.error(f"Health alert send failed: {e}")
+        return False
+
+
+def raise_alert(kind: str, url: str = "", now: datetime | None = None) -> None:
+    from src.state import load_state, save_state
+
+    now = now or datetime.now(timezone.utc)
+    state = load_state()
+    alerts = state.get("health_alerts") or {}
+    last = alerts.get(kind)
+    if last:
+        try:
+            if now - datetime.fromisoformat(last) < REPEAT_AFTER:
+                logger.info(f"Health alert '{kind}' already sent at {last}; not repeating yet.")
+                return
+        except ValueError:
+            pass
+
+    text = MESSAGES[kind].format(url=url).strip()
+    if _send(text):
+        alerts[kind] = now.isoformat()
+        state["health_alerts"] = alerts
+        save_state(state)
+        logger.info(f"Health alert '{kind}' sent.")
+
+
+def clear_alerts(session_count: int) -> None:
+    from src.state import load_state, save_state
+
+    state = load_state()
+    if not state.get("health_alerts"):
+        return
+    if _send(RECOVERY.format(count=session_count)):
+        state["health_alerts"] = {}
+        save_state(state)
+        logger.info("Health alerts cleared (recovered).")
