@@ -1,5 +1,6 @@
 kinoprogramm_url: "https://www.kinoprogramm.com/kino/konstanz-universitaetsstadt/cinestar-konstanz-60996"
 timezone: "Europe/Berlin"
+cinestar_cinema_id: 32  # CineStar Konstanz in https://www.cinestar.de/api/cinema/
 request_timeout: 15
 request_retries: 2
 ov_markers:

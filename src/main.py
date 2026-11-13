@@ -22,37 +22,43 @@ def main():
     
     # --- PIPELINE START ---
     
-    # 1. Fetch
+    # 1+2. Fetch & parse
+    # Primary: CineStar's own API (includes previews / special OV screenings).
+    # Fallback: kinoprogramm.com (regular programme only).
     from src.fetch_kinoprogramm import fetch_schedule_html, load_settings
-    html = fetch_schedule_html()
-    settings = load_settings()
-    if not html:
-        logger.error("Failed to fetch HTML.")
-        if args.send:
-            from src.health_alert import raise_alert
-            raise_alert("fetch", settings.get("kinoprogramm_url", ""))
-            return
-        sys.exit(1)
-        
-    # 2. Parse
+    from src.fetch_cinestar import fetch_cinestar_sessions
     from src.parse_schedule import parse_schedule
+    from src.health_alert import raise_alert, clear_alerts
     settings = load_settings()
-    
-    sessions = parse_schedule(html, settings.get("timezone", "Europe/Berlin"))
-    logger.info(f"Found {len(sessions)} total sessions.")
-    if not sessions:
-        # A cinema with zero sessions in 14 days almost always means the
-        # kinoprogramm.com layout changed.
-        logger.error("Parsed 0 sessions — parser is likely broken (page layout changed).")
+    tz_name = settings.get("timezone", "Europe/Berlin")
+
+    sessions = fetch_cinestar_sessions(settings.get("cinestar_cinema_id", 32), tz_name)
+    if sessions:
+        logger.info(f"CineStar API: {len(sessions)} sessions.")
         if args.send:
-            from src.health_alert import raise_alert
-            raise_alert("parser", settings.get("kinoprogramm_url", ""))
-            return
-        sys.exit(1)
-    if args.send:
-        from src.health_alert import clear_alerts
-        clear_alerts(len(sessions))
-    
+            clear_alerts(len(sessions))
+    else:
+        logger.error("CineStar API gave no sessions; falling back to kinoprogramm.com.")
+        if args.send:
+            raise_alert("api", "https://www.cinestar.de/kino-konstanz")
+        html = fetch_schedule_html()
+        if not html:
+            logger.error("Failed to fetch kinoprogramm HTML.")
+            if args.send:
+                raise_alert("fetch", settings.get("kinoprogramm_url", ""))
+                return
+            sys.exit(1)
+        sessions = parse_schedule(html, tz_name)
+        if not sessions:
+            # Zero sessions in 14 days almost always means the layout changed.
+            logger.error("Parsed 0 sessions — kinoprogramm parser is likely broken.")
+            if args.send:
+                raise_alert("parser", settings.get("kinoprogramm_url", ""))
+                return
+            sys.exit(1)
+
+    logger.info(f"Found {len(sessions)} total sessions.")
+
     # 3. Filter Week Window
     from src.week_interval import compute_week_window, filter_by_week
     from datetime import datetime, timedelta
@@ -73,9 +79,13 @@ def main():
     # However, if sessions_in_window is empty (early Monday), max() fails. 
     # Let's use `sessions` (all parsed) to determine horizon, but compare against week_end.
     
-    is_complete = is_week_complete(sessions, week_start, week_end)
+    # Far-future events (opera live, previews) would make the horizon look
+    # complete before the regular weekly programme is published, so judge
+    # completeness on regular screenings only.
+    regular = [x for x in sessions if getattr(x, "kind", "movie") == "movie"] or sessions
+    is_complete = is_week_complete(regular, week_start, week_end)
     
-    max_dt = max(s.dt_local for s in sessions) if sessions else "None"
+    max_dt = max(x.dt_local for x in regular) if regular else "None"
     required_wed = week_end - timedelta(days=1)
     
     logger.info(f"Completeness check: max_dt={max_dt}, required>={required_wed}. Complete={is_complete}")
@@ -130,12 +140,15 @@ def main():
         # Link — pass the TMDb year so we reject CineStar pages whose
         # Produktionsjahr doesn't match (zombie detail pages for unrelated
         # older films with the same title slug).
-        c_url = resolve_cinestar_url(
-            norm_title,
-            earliest_session.film_url,
-            tmdb_original_title,
-            expected_year=tmdb_year,
-        )
+        if (earliest_session.film_url or "").startswith("https://www.cinestar.de/"):
+            c_url = earliest_session.film_url
+        else:
+            c_url = resolve_cinestar_url(
+                norm_title,
+                earliest_session.film_url,
+                tmdb_original_title,
+                expected_year=tmdb_year,
+            )
         
         final_items.append({
             'title': norm_title,
