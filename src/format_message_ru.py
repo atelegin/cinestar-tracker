@@ -45,7 +45,8 @@ def _format_sessions_ru(item: dict) -> str:
 
     return "; ".join(grouped_sessions)
 
-def format_message(week_start: datetime, week_end: datetime, items: list[dict]) -> str:
+def format_message(week_start: datetime, week_end: datetime, items: list[dict],
+                   upcoming: list[dict] | None = None) -> str:
     header = f"🎬 CineStar Konstanz — OV ({_week_range_compact(week_start, week_end)})"
     lines = [header, ""]
 
@@ -71,4 +72,24 @@ def format_message(week_start: datetime, week_end: datetime, items: list[dict]) 
         tail = f" — {' · '.join(links)}" if links else ""
         lines.append(f"• {title_html} — {dt}{tail}")
 
+    if upcoming:
+        lines.append("")
+        lines.append("🔜 Скоро — превью и спецпоказы:")
+        for item in upcoming:
+            lines.append(_format_upcoming_line(item))
+
     return "\n".join(lines)
+
+
+def _format_upcoming_line(item: dict) -> str:
+    title = escape(item["title"])
+    if item.get("tmdb_id"):
+        title = f'<a href="https://letterboxd.com/tmdb/{item["tmdb_id"]}/">{title}</a>'
+    sessions = sorted(item.get("sessions") or [item["session"]], key=lambda s: s.dt_local)
+    when = ", ".join(format_date_ru(s.dt_local) for s in sessions)
+    tags = sorted({s.tags for s in sessions if s.tags})
+    tag = f" ({'/'.join(tags)})" if tags else ""
+    tail = ""
+    if item.get("cinestar_url"):
+        tail = f' — <a href="{escape(item["cinestar_url"])}">⭐ Билеты</a>'
+    return f"• {title}{tag} — {when}{tail}"
