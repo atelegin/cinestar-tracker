@@ -80,6 +80,12 @@ def load_overrides(path: str = "config/overrides.yaml") -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f) or {}
 
+def _cmp_norm(text: str) -> str:
+    """Lowercase and drop punctuation so "Panem - Sunrise", "Panem – Sunrise"
+    and "Panem: Sunrise" compare equal."""
+    return re.sub(r"[\W_]+", " ", (text or "").lower()).strip()
+
+
 def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple[Optional[int], str]:
     if not api_key:
         return None, "no_api_key"
@@ -136,12 +142,12 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
 
         best_candidate = None
         best_score = -1
-        query_lower = query.lower()
+        query_lower = _cmp_norm(query)
 
         for cand in candidates:
             score = 0
-            cand_title = cand.get("title", "").lower()
-            cand_orig = cand.get("original_title", "").lower()
+            cand_title = _cmp_norm(cand.get("title", ""))
+            cand_orig = _cmp_norm(cand.get("original_title", ""))
 
             # Exact match
             if query_lower == cand_title or query_lower == cand_orig:
@@ -163,8 +169,13 @@ def tmdb_search(title_norm: str, year: int = None, api_key: str = None) -> tuple
                 # always wrong.
                 if cand_year is not None:
                     age = current_year - cand_year
-                    if age <= 3:
+                    # Two recent films can share a title (e.g. the 2026
+                    # "How to Rob a Bank" feature vs. an earlier documentary):
+                    # the one released this year is the one in cinemas.
+                    if age <= 0:
                         score += 25
+                    elif age <= 3:
+                        score += 15
                     elif age <= 10:
                         score += 0
                     elif age <= 30:
