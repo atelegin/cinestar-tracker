@@ -35,6 +35,11 @@ def main():
     
     sessions = parse_schedule(html, settings.get("timezone", "Europe/Berlin"))
     logger.info(f"Found {len(sessions)} total sessions.")
+    if not sessions:
+        # A cinema with zero sessions in 14 days almost always means the
+        # kinoprogramm.com layout changed. Fail loudly so the run turns red.
+        logger.error("Parsed 0 sessions — parser is likely broken (page layout changed).")
+        sys.exit(1)
     
     # 3. Filter Week Window
     from src.week_interval import compute_week_window, filter_by_week
