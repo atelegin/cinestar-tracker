@@ -76,6 +76,7 @@ jobs:
             || echo "Keepalive call failed (non-fatal)."
 
       - name: Commit updated state (if changed)
+        if: always()
         run: |
           git status --porcelain
           if git diff --quiet -- state/state.json; then
@@ -101,3 +102,11 @@ jobs:
 
           echo "Failed to push updated state after retries."
           exit 1
+
+      - name: Notify Telegram on failure
+        if: failure()
+        run: |
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=⚠️ CineStar-бот упал с ошибкой. Лог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            > /dev/null || true

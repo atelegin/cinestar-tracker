@@ -25,8 +25,13 @@ def main():
     # 1. Fetch
     from src.fetch_kinoprogramm import fetch_schedule_html, load_settings
     html = fetch_schedule_html()
+    settings = load_settings()
     if not html:
         logger.error("Failed to fetch HTML.")
+        if args.send:
+            from src.health_alert import raise_alert
+            raise_alert("fetch", settings.get("kinoprogramm_url", ""))
+            return
         sys.exit(1)
         
     # 2. Parse
@@ -37,9 +42,16 @@ def main():
     logger.info(f"Found {len(sessions)} total sessions.")
     if not sessions:
         # A cinema with zero sessions in 14 days almost always means the
-        # kinoprogramm.com layout changed. Fail loudly so the run turns red.
+        # kinoprogramm.com layout changed.
         logger.error("Parsed 0 sessions — parser is likely broken (page layout changed).")
+        if args.send:
+            from src.health_alert import raise_alert
+            raise_alert("parser", settings.get("kinoprogramm_url", ""))
+            return
         sys.exit(1)
+    if args.send:
+        from src.health_alert import clear_alerts
+        clear_alerts(len(sessions))
     
     # 3. Filter Week Window
     from src.week_interval import compute_week_window, filter_by_week
