@@ -52,7 +52,6 @@ def format_message(week_start: datetime, week_end: datetime, items: list[dict],
 
     if not items:
         lines.append("OV-сеансов не найдено.")
-        return "\n".join(lines)
 
     for item in items:
         title = escape(item["title"])
