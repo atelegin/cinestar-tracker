@@ -2,10 +2,9 @@ name: CineStar Konstanz OV Bot
 
 on:
   schedule:
-    # Daytime only (UTC): 07:17 / 13:17 / 19:17 CET. The self-hosted runner is
-    # a laptop that sleeps at night; a job picked up during a dark wake loses
-    # network mid-step and hangs until the timeout.
-    - cron: "17 6,12,18 * * *"
+    # Every 6 hours (UTC). The runner is a laptop that may be asleep; a missed
+    # or timed-out run is harmless, the next one catches up.
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       force_send:
@@ -116,12 +115,12 @@ jobs:
           exit 1
 
       - name: Notify Telegram on failure
-        # cancelled() covers timeouts too: a timed-out job is "cancelled",
-        # not "failed", so failure() alone stayed silent.
-        if: failure() || cancelled()
+        # failure() only: timeouts/cancellations happen when the laptop sleeps
+        # mid-run and are not worth a message.
+        if: failure()
         timeout-minutes: 1
         run: |
           curl -fsS -m 20 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=⚠️ CineStar-бот упал (${{ job.status }}). Лог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --data-urlencode "text=⚠️ CineStar-бот упал с ошибкой. Лог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             > /dev/null || true

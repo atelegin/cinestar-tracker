@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 REPEAT_AFTER = timedelta(hours=24)
 
+# The runner is a laptop that can sleep (and lose network) at any moment, so
+# network-type failures alert only if they persist this long. A parser break
+# (page loaded fine, 0 sessions) alerts immediately.
+NETWORK_KINDS = {"api", "fetch"}
+PERSIST_BEFORE_ALERT = timedelta(hours=24)
+
 MESSAGES = {
     "api": (
         "⚠️ CineStar-бот: API cinestar.de не отдал сеансы — временно беру данные "
@@ -52,6 +58,21 @@ def raise_alert(kind: str, url: str = "", now: datetime | None = None) -> None:
 
     now = now or datetime.now(timezone.utc)
     state = load_state()
+
+    since = state.get("health_failures_since") or {}
+    if kind not in since:
+        since[kind] = now.isoformat()
+        state["health_failures_since"] = since
+        save_state(state)
+    if kind in NETWORK_KINDS:
+        try:
+            first = datetime.fromisoformat(since[kind])
+        except ValueError:
+            first = now
+        if now - first < PERSIST_BEFORE_ALERT:
+            logger.info(f"'{kind}' failing since {since[kind]}; not alerting yet (laptop may be asleep/offline).")
+            return
+
     alerts = state.get("health_alerts") or {}
     last = alerts.get(kind)
     if last:
@@ -74,6 +95,9 @@ def clear_alerts(session_count: int) -> None:
     from src.state import load_state, save_state
 
     state = load_state()
+    if state.get("health_failures_since"):
+        state["health_failures_since"] = {}
+        save_state(state)
     if not state.get("health_alerts"):
         return
     if _send(RECOVERY.format(count=session_count)):
