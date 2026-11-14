@@ -2,7 +2,8 @@ name: CineStar Konstanz OV Bot
 
 on:
   schedule:
-    # Robust option (DST-proof): run every 6 hours in UTC
+    # Every 6 hours (UTC). The runner is a laptop that may be asleep; a missed
+    # or timed-out run is harmless, the next one catches up.
     - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
@@ -23,9 +24,12 @@ permissions:
 jobs:
   run-bot:
     runs-on: self-hosted
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       TZ: Europe/Berlin
+      # Outside the workspace: actions/checkout runs `git clean -ffdx`, which
+      # wiped an in-repo .venv and forced a full pip download on every run.
+      VENV: ${{ github.workspace }}/../.venv-cinestar
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -41,11 +45,18 @@ jobs:
         run: python3 --version
 
       - name: Install dependencies
+        timeout-minutes: 4
         run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          REQ_HASH=$(shasum -a 256 requirements.txt | cut -d' ' -f1)
+          if [ ! -x "$VENV/bin/python" ] || [ "$(cat "$VENV/.req-hash" 2>/dev/null)" != "$REQ_HASH" ]; then
+            rm -rf "$VENV"
+            python3 -m venv "$VENV"
+            "$VENV/bin/python" -m pip install --disable-pip-version-check \
+              --timeout 20 --retries 3 -r requirements.txt
+            echo "$REQ_HASH" > "$VENV/.req-hash"
+          else
+            echo "Reusing venv at $VENV"
+          fi
 
       - name: Pull latest state
         run: |
@@ -55,7 +66,7 @@ jobs:
 
       - name: Run bot (send)
         run: |
-          . .venv/bin/activate
+          . "$VENV/bin/activate"
           if [ "${{ github.event.inputs.force_send || 'false' }}" = "true" ]; then
             python -m src.main --send --force
           else
@@ -104,9 +115,12 @@ jobs:
           exit 1
 
       - name: Notify Telegram on failure
+        # failure() only: timeouts/cancellations happen when the laptop sleeps
+        # mid-run and are not worth a message.
         if: failure()
+        timeout-minutes: 1
         run: |
-          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          curl -fsS -m 20 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
             --data-urlencode "text=⚠️ CineStar-бот упал с ошибкой. Лог: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             > /dev/null || true

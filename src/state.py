@@ -16,7 +16,8 @@ DEFAULT_STATE = {
     "sent_hashes_by_week": {},
     "tmdb_cache": {},
     "cinestar_cache": {},
-    "health_alerts": {}
+    "health_alerts": {},
+    "health_failures_since": {}
 }
 
 MAX_SENT_HASH_HISTORY = 16
