@@ -24,7 +24,10 @@ permissions:
 jobs:
   run-bot:
     runs-on: self-hosted
-    timeout-minutes: 10
+    # Generous: the runner is a laptop, and time spent asleep counts toward
+    # this limit. Network-dependent steps below have their own short timeouts
+    # and are allowed to fail without turning the run red.
+    timeout-minutes: 60
     env:
       TZ: Europe/Berlin
       # Outside the workspace: actions/checkout runs `git clean -ffdx`, which
@@ -36,16 +39,23 @@ jobs:
 
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
+        timeout-minutes: 5
+        continue-on-error: true
         with:
           fetch-depth: 0
           ref: main
 
       - name: Check Python
+        if: steps.checkout.outcome == 'success'
         run: python3 --version
 
       - name: Install dependencies
+        id: deps
+        if: steps.checkout.outcome == 'success'
         timeout-minutes: 4
+        continue-on-error: true
         run: |
           REQ_HASH=$(shasum -a 256 requirements.txt | cut -d' ' -f1)
           if [ ! -x "$VENV/bin/python" ] || [ "$(cat "$VENV/.req-hash" 2>/dev/null)" != "$REQ_HASH" ]; then
@@ -59,12 +69,22 @@ jobs:
           fi
 
       - name: Pull latest state
+        id: pull
+        if: steps.deps.outcome == 'success'
+        timeout-minutes: 3
+        continue-on-error: true
         run: |
           git fetch origin main
           git checkout main
           git pull --ff-only origin main
 
+      - name: Skip run (no network — laptop asleep or offline)
+        if: steps.pull.outcome != 'success'
+        run: echo "::notice::Setup steps failed (likely sleep/offline). Skipping; the next scheduled run will catch up."
+
       - name: Run bot (send)
+        id: bot
+        if: steps.pull.outcome == 'success'
         run: |
           . "$VENV/bin/activate"
           if [ "${{ github.event.inputs.force_send || 'false' }}" = "true" ]; then
@@ -76,7 +96,7 @@ jobs:
       - name: Keep schedule alive
         # GitHub disables cron workflows in public repos after 60 days without
         # repo activity. Re-enabling via API resets that timer.
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' && steps.bot.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -87,7 +107,7 @@ jobs:
             || echo "Keepalive call failed (non-fatal)."
 
       - name: Commit updated state (if changed)
-        if: always()
+        if: always() && steps.pull.outcome == 'success'
         run: |
           git status --porcelain
           if git diff --quiet -- state/state.json; then
