@@ -1,6 +1,7 @@
 {
   "cinestar_cache": {},
   "health_alerts": {},
+  "health_failures_since": {},
   "last_hash": "d5ae8a6bfa107b6b15061e88c76d02998c00453b3cb59aa68a78de64d56fefce",
   "last_sent_week_start": "2026-11-12",
   "sent_hashes_by_week": {
@@ -43,6 +44,7 @@
     "Michael": 936075,
     "Minions & Monster": 1315772,
     "Nürnberg": 1214931,
+    "OM": 1702582,
     "Obsession - Du sollst mich lieben": 1339713,
     "One Battle After Another": 1054867,
     "Scary Movie": 1273221,
